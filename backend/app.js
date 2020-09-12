@@ -6,6 +6,9 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
+const fs = require('fs'); 
+const csv = require('csvtojson');
+const csvtojson = require('csvtojson');
 
 const app = express();
 
@@ -24,16 +27,21 @@ app.use(fileUpload());
 app.use('/public', express.static(__dirname + '/public'));
 
 
-app.post('/upload', (req, res, next) => {
-  console.log(req);
+app.post('/upload', (req, res) => {
+
   let imageFile = req.files.file;
 
-  imageFile.mv(`${__dirname}/public/${req.body.filename}.jpg`, function(err) {
+  imageFile.mv(`${__dirname}/public/${req.body.filename}`, function(err) {
     if (err) {
       return res.status(500).send(err);
     }
+    csvtojson()
+    .fromString(imageFile.data.toString())
+    .then((json) => {
+      console.log(json)
+      res.json({file: json});
+    })
 
-    res.json({file: `public/${req.body.filename}.jpg`});
   });
 
 })
